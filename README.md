@@ -1,4 +1,4 @@
 pvmon
 =====
 
-Alerting software
+Data collection and alerting software
