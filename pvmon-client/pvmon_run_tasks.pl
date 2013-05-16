@@ -1,9 +1,7 @@
 #!/usr/bin/perl
 
-#http://stackoverflow.com/questions/3841322/how-do-i-load-libraries-relative-to-the-script-location-in-perl
-
 # ------------------------------------------------------------------------------
-# pvmon_scheduler.pl
+# pvmon_run_tasks.pl
 # http://github.com/patrickviet/pvmon/pvmon-client/
 # runs events
 #
@@ -12,18 +10,32 @@
 # ------------------------------------------------------------------------------ 
 
 
-# External libs
+# Standard libs
 use warnings;
 use strict;
 use POE;
 
-# Internal libs
+# ------------------------------------------------------------------------------
+# Get current path - must be run before everything else - hence the BEGIN func
+# The used libraries are part of perl core.
+our $basedir;
+BEGIN {
+  use Cwd qw(realpath);
+  use File::Basename;
+  $basedir = dirname(realpath(__FILE__));
+}
+
+# ------------------------------------------------------------------------------
+# Internal libs (relative path...)
+use lib $basedir;
 use PVMon::LoadConfig; # introduces the $conf variable ...
 use PVMon::RessourceManager;
 use PVMon::Task;
 
 # ------------------------------------------------------------------------------
-
+# Initialize
+$PVMon::LoadConfig::basedir = $basedir;
+PVMon::LoadConfig::reload();
 my $resman = PVMon::RessourceManager->new();
 
 

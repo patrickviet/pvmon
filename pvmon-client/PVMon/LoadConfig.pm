@@ -5,18 +5,16 @@ use strict;
 use Exporter;
 use Config::Tiny;
 
-use vars qw($conf);
+use vars qw($conf $basedir);
 our @ISA = qw(Exporter);
 our @EXPORT = qw($conf);
 
-## improved version: reads files from other directories and shit.
+## improved version: reads files from other directories and stuff
+## You must set $PVMon::LoadConfig::basedir before running a reload
 
-## FIXME: I set base directory as /home/pviet/monperl/pvmon-client
-my $basedir = '/home/pviet/monperl/pvmon-client';
-
-reload();
 
 sub reload {
+  die 'needs basedir' unless -d $basedir;
   my $oldconf = $conf;
   $conf = Config::Tiny->read($basedir.'/pvmon.conf');
   if(!$conf) { $conf = $oldconf; }

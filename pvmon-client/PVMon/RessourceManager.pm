@@ -24,7 +24,7 @@ sub reload {
   if($msg) { print "reload: $msg\n"; } 
   my $queue = $obj->{queue};
   
-  LoadConfig::reload();
+  PVMon::LoadConfig::reload();
   
   ## so here I do a big 'diff' which is kinda fun ...
   ## if cmd or exec_interval change then I'll put next run at now
