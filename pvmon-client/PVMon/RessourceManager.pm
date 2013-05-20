@@ -31,31 +31,34 @@ sub reload {
 	
 	# delete non existing stuff
 	foreach my $task_id (keys %$queue) {
-		if(!exists $conf->{$task_id}) {
+		if(!exists $conf_tasks->{$task_id}) {
 			delete $queue->{$task_id};
 			delete $obj->{running}->{$task_id}; # if it's running that will take care of it ...
 		}
 	}
+
+				use Data::Dumper;
+				print Dumper($queue);
 	
 	# add new stuff and update existing
-	foreach my $task_id (keys %$conf) {
-		next if $task_id eq 'base'; # ignore base config that's not a plugin exec
+	foreach my $task_id (keys %$conf_tasks) {
+		next if $task_id  =~ m/^\_/; # ignore everything that starts with an underscore
 		
-		if(exists $queue->{task_id}) {
+		if(exists $queue->{$task_id}) {
 			my $next_run = 0;
-			if ($queue->{$task_id}->{exec_interval} eq $conf->{$task_id}->{exec_interval}
+			if ($queue->{$task_id}->{exec_interval} eq $conf_tasks->{$task_id}->{exec_interval}
 				&& $queue->{$task_id}->{exec_interval} eq $queue->{$task_id}->{exec_interval}) {
 
 				$next_run = $queue->{$task_id}->{next_run};
 
 			}
 			
-			%{$queue->{$task_id}} = %{$conf->{$task_id}}; 
+			%{$queue->{$task_id}} = %{$conf_tasks->{$task_id}}; 
 			$queue->{$task_id}->{next_run} = $next_run; 
 						 
 		
 		} else {
-			%{$queue->{$task_id}} = %{$conf->{$task_id}}; # defer to make a real copy
+			%{$queue->{$task_id}} = %{$conf_tasks->{$task_id}}; # defer to make a real copy
 			$queue->{$task_id}->{next_run} = 0;					
 		}		
 	}

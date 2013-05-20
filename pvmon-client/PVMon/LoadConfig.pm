@@ -4,10 +4,11 @@ use warnings;
 use strict;
 use Exporter;
 use Config::Tiny;
+use Carp qw(croak carp);
 
-use vars qw($conf $basedir);
+use vars qw($conf $conf_tasks $basedir);
 our @ISA = qw(Exporter);
-our @EXPORT = qw($conf);
+our @EXPORT = qw($conf $conf_tasks);
 
 ## improved version: reads files from other directories and stuff
 ## You must set $PVMon::LoadConfig::basedir before running a reload
@@ -15,16 +16,50 @@ our @EXPORT = qw($conf);
 
 sub reload {
 	die 'needs basedir' unless -d $basedir;
-	my $oldconf = $conf;
-	$conf = Config::Tiny->read($basedir.'/pvmon.conf');
-	if(!$conf) { $conf = $oldconf; }
 
-	my $confd = $basedir.'/pvmon.conf.d';
+	# first part: the 'generic' configuration
+	# ---------------------------------------
+	my $new_conf = Config::Tiny->read("$basedir/pvmon.conf");
+	if(!$new_conf) {
+		carp "unable to load config file $basedir/pvmon.conf: $!";
+		if($conf) {
+			carp "keeping current config running";
+			return;
+		} else {
+			# this is a first run
+			croak "interrupting startup";
+		}
+	}
 
-	if (-d $confd) {
-		opendir(my $dh, $confd) or die "unable to open dir $confd: $!";
+	my $new_conf_local = Config::Tiny->read("$basedir/pvmon.local.conf");
+	if($new_conf_local) {
+		override($new_conf,$new_conf_local);
+	} else {
+		carp "unable to load local config file $basedir/pvmon.local.conf: $!";
+	}
+
+	$conf = $new_conf;
+
+
+	# second part: the 'task' configuration
+	# -------------------------------------
+
+	my $new_conf_tasks = Config::Tiny->read("$basedir/pvmon.tasks.conf");
+	if(!$new_conf_tasks) {
+		carp "unable to load config file $basedir/pvmon.tasks.conf: $!";
+		if($conf_tasks) {
+				carp "keeping current running config";
+			} else {
+				croak "interrupting startup";
+			}
+	}
+
+	my $conf_tasks_d = $basedir.'/pvmon.tasks.conf.d';
+
+	if (-d $conf_tasks_d) {
+		opendir(my $dh, $conf_tasks_d) or die "unable to open dir $conf_tasks_d: $!";
 		foreach my $file (readdir $dh) {
-			next unless -f "$confd/$file";
+			next unless -f "$conf_tasks_d/$file";
 			next unless $file =~ m/(.*)\.conf$/; # only get .conf files ...
 
 			# replacing stuff with slashes because that's how graphite automatically
@@ -40,26 +75,33 @@ sub reload {
 			}
 			
 			
-			my $localconf = Config::Tiny->read("$confd/$file") or next;
+			my $localconf = Config::Tiny->read("$conf_tasks_d/$file");
 
-
-			# auto fill in ----
-			if(exists $localconf->{_}) {
-				$localconf->{$default_service_base.'/'.$default_service_sub} = delete $localconf->{_};
-			}
-
-			foreach my $service (keys %$localconf) {
-				if (!($service =~ m/\//) and $service ne 'base') {
-					$localconf->{$default_service_base.'/'.$service} = delete $localconf->{$service};
+			if ($localconf) {
+				# auto fill in ----
+				if(exists $localconf->{_}) {
+					$localconf->{$default_service_base.'/'.$default_service_sub} = delete $localconf->{_};
 				}
-			}
+
+				foreach my $service (keys %$localconf) {
+					if (!($service =~ m/\//) and $service ne 'base') {
+						$localconf->{$default_service_base.'/'.$service} = delete $localconf->{$service};
+					}
+				}
+					
 				
+				override($new_conf_tasks,$localconf);
 			
-			override($conf,$localconf);
+			} else {
+				carp "unable to load $conf_tasks_d/$file: $!";
+			}
 		}
 		
 		closedir($dh); 
-	} 
+	}
+
+	$conf_tasks = $new_conf_tasks;
+
 }
 
 
