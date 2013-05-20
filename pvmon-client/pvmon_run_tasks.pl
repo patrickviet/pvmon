@@ -15,6 +15,11 @@ use warnings;
 use strict;
 use POE;
 
+
+# ------------------------------------------------------------------------------
+# Must run as root
+die 'must run as root' unless $< == 0;
+
 # ------------------------------------------------------------------------------
 # Get current path - must be run before everything else - hence the BEGIN func
 # The used libraries are part of perl core.
