@@ -36,16 +36,16 @@ sub reload {
 			delete $obj->{running}->{$task_id}; # if it's running that will take care of it ...
 		}
 	}
-
-				use Data::Dumper;
-				print Dumper($queue);
 	
 	# add new stuff and update existing
 	foreach my $task_id (keys %$conf_tasks) {
 		next if $task_id  =~ m/^\_/; # ignore everything that starts with an underscore
+
 		
 		if(exists $queue->{$task_id}) {
 			my $next_run = 0;
+
+			# reset next run to right now if the exec interval changed
 			if ($queue->{$task_id}->{exec_interval} eq $conf_tasks->{$task_id}->{exec_interval}
 				&& $queue->{$task_id}->{exec_interval} eq $queue->{$task_id}->{exec_interval}) {
 
