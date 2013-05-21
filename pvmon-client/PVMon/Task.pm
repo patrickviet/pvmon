@@ -137,9 +137,16 @@ sub task_close {
 	
 	$obj->{ret} = $ret;
 	
-	if(!exists $ret->{service}) { $ret->{service} = $obj->{req}->{service}; }
 	if(!exists $ret->{time}) { $ret->{time} = time(); }
-	
+
+	# fill other values
+	foreach my $k(keys %{$obj->{req}}) {
+		if(!exists $ret->{$k}) {
+			$ret->{$k} = $obj->{req}->{$k};
+		}
+	}
+
+
 	# FIXME
 	# kill timeout 
 
