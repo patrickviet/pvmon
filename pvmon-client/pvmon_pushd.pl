@@ -83,6 +83,7 @@ while(1) {
 			foreach my $file (@to_delete) { unlink $file or die "unable to delete $file: $!"; }
 		} else {
 			print "unable to push\n";
+			$next_wait = 5;
 		}
 	}
 	sleep($next_wait);
