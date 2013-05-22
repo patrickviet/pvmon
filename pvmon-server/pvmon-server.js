@@ -41,6 +41,11 @@ http.createServer(function(req,res){
 		var body = '';
 		req.on('data', function(data) {
 			body += data;
+
+			if (body.length > 1e6) { 
+				// FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
+				req.connection.destroy();
+			}
 		});
 		req.on('end', function() {
 			
@@ -48,15 +53,41 @@ http.createServer(function(req,res){
 			var events = JSON.parse(body);
 			events.forEach(function(ev) {
 				if(!ev.hasOwnProperty('stream')) {
-					ev.stream = 'default';
+					ev.stream = ['default'];
+				}
+
+				var stream_list = ev.stream.split(',');
+				if(stream_list.length) {
+
+
+					// a bit of split / stream processing...
+					
+					var stream_list_unique = {};
+
+					stream_list.forEach(function(st) {
+						if(streams.hasOwnProperty(st)) {
+							// all good
+							stream_list_unique[st] = 1;
+						} else {
+							// we have an error here!!
+							// for now we just go to default...
+							stream_list_unique['default'] = 1;
+						}
+
+
+						ev.stream = [];
+						for (var key in stream_list_unique) {
+							ev.stream.push(key);
+						}
+					});
+
+
+				} else {
+					ev.stream = ['default'];
 				}
 				
-				if(!streams.hasOwnProperty(ev.stream)) {
-					ev.stream = 'default';
-				}
-
-
-				streams[ev.stream].insert_event(ev);
+				// execute for all streams
+				ev.stream.forEach(function(st) { streams[st].insert_event(ev); });
 
 			});
 
