@@ -97,12 +97,17 @@ sub task_run {
 	}
 	
 	$obj->{wheel} = $wheel;
+
+	# timeout
+	$obj->{timeout_id} = $kernel->delay_set('timeout',$obj->{req}->{exec_timeout});
 }
 
 sub timeout {
 	my ($obj,$kernel) = @_[OBJECT,KERNEL];
-	$obj->{stderr} .= "timeout!!!! (".$obj->{req}->{timeout}.")";
-	$kernel->yield('task_close');
+	$obj->{stderr} .= "exec timeout - killed after ".$obj->{req}->{exec_timeout}."sec";
+
+	## Here I run a hard kill ...
+	$obj->{wheel}->kill('KILL');
 }
 
 sub task_stdout {
@@ -146,12 +151,13 @@ sub task_close {
 		}
 	}
 
-
 	# FIXME
 	# kill timeout 
 
 	$obj->free_myself();
 	
+	# not putting this in free myself...
+	$kernel->alarm_remove($obj->{timeout_id});
 	$kernel->post('main_loop','basic_loop');
 }
 
