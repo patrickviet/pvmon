@@ -125,7 +125,7 @@ sub run_basic_loop {
 	my $kernel = $_[KERNEL];
 	# we run the basic loop every two seconds
 	$kernel->yield('basic_loop');
-	$kernel->delay_set('run_basic_loop',2);	
+	$kernel->delay_set('run_basic_loop',1);	
 }
 
 sub _child {
