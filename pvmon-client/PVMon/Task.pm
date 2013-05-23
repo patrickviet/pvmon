@@ -144,6 +144,9 @@ sub task_close {
 	
 	if(!exists $ret->{time}) { $ret->{time} = time(); }
 
+	# in case of timeout for example
+	if(!exists $ret->{state} and $ret->{stderr}) { $ret->{state} = 'crit'; }
+
 	# fill other values
 	foreach my $k(keys %{$obj->{req}}) {
 		if(!exists $ret->{$k}) {
