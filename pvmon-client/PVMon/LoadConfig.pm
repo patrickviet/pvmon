@@ -120,6 +120,16 @@ sub reload {
 		closedir($dh); 
 	}
 
+	# set default values
+	foreach my $service (keys %$conf_tasks) {
+		foreach my $key (keys %{$conf->{default_task_values}}) {
+			if(!exists $conf_tasks->{$service}->{$key}) {
+				$new_conf_tasks->{$service}->{$key} = $conf->{default_task_values}->{$key};
+			} else { print "$key already exists\n"}
+		}
+	}
+
+
 	$conf_tasks = $new_conf_tasks;
 
 }
