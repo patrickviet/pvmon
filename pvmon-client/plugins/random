@@ -1,15 +1,12 @@
 #!/usr/bin/perl
 
 $var = {
-	host => `hostname`,
 	metric => rand(),
 	state => 'ok',
 };
 
 if ($var->{metric} > 0.8) { $var->{state} = 'warn'; }
 if ($var->{metric} > 0.9) { $var->{state} = 'crit'; }
-
-chomp $var->{host};
 
 foreach my $k (keys %$var) {
 	print $k.' '.$var->{$k}."\n";

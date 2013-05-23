@@ -1,35 +1,10 @@
 #!/usr/local/bin/node
 
+var url = require('url');
 
-var rs = require('rolling_state.js');
-
-/*
-rs.insert_event({
-	state: 'crit',
-	time: (new Date()).getTime(),
-	metric: 33,
-	host: 'henri',
-	service: 'bobby',
-	rs_max_warn: 2,
-	rs_max_crit: 2,
-	rs_length: 5,
-});
-
-rs.insert_event({
-	state: 'crit',
-	time: (new Date()).getTime(),
-	metric: 33,
-	host: 'henri',
-	service: 'jimmy/bobby',
-	rs_max_warn: 2,
-	rs_max_crit: 2,
-	rs_length: 5,
-});
-*/
-
-var streams = {
-	'rolling_state': rs,
-	'default': { 'insert_event': console.log }
+var urls = {
+	'/insert_event': require('insert_event.js').process,
+	'/get_status': function(req,res,body) { console.log(body); res.write('rrr'); res.end(); }
 };
 
 var http = require('http');
@@ -48,61 +23,26 @@ http.createServer(function(req,res){
 			}
 		});
 		req.on('end', function() {
-			
-			// FIXME: add some more type checks
-			var events = JSON.parse(body);
-			events.forEach(function(ev) {
-				if(!ev.hasOwnProperty('stream')) {
-					ev.stream = ['default'];
-				}
 
-				var stream_list = ev.stream.split(',');
-				if(stream_list.length) {
-
-
-					// a bit of split / stream processing...
-					
-					var stream_list_unique = {};
-
-					stream_list.forEach(function(st) {
-						if(streams.hasOwnProperty(st)) {
-							// all good
-							stream_list_unique[st] = 1;
-						} else {
-							// we have an error here!!
-							// for now we just go to default...
-							stream_list_unique['default'] = 1;
-						}
+			// parse url
+			var myurl = url.parse(req.url);
+			if (urls.hasOwnProperty(myurl.path)) {
+				urls[myurl.path](req,res,body);
+			} else {
+				console.log('404: '+ myurl.path);
+				console.log(body);
+				res.writeHead(404, {'Content-Type':'text/plain'});
+				res.write("404 Not found\n");
+				res.end();
+			}
 
 
-						ev.stream = [];
-						for (var key in stream_list_unique) {
-							ev.stream.push(key);
-						}
-					});
-
-
-				} else {
-					ev.stream = ['default'];
-				}
-				
-				// execute for all streams
-				ev.stream.forEach(function(st) { streams[st].insert_event(ev); });
-
-			});
-
-			res.writeHead(200, {'Content-Type':'text/plain'});
-			res.write("OK\n");
-			res.end();
 		});
+	} else {
+		res.writeHead(403);
+		res.write("403 Not this method\n");
+		res.end();
 	}
-
-
-	//var my_path = url.parse(req.url).pathname;
-
-	//if(url == '/insert_event') {
-
-	//}
 
 }).listen(8000);
 
