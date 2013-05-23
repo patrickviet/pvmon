@@ -131,7 +131,11 @@ sub reload {
 		# get rid of inactive services
 		if (!$conf_tasks->{$service}->{active}) {
 			delete $conf_tasks->{$service};
+		} else {
+			# the active flag is not really useful for now anyway... let's not keep it for now
+			delete $conf_tasks->{$service}->{active};
 		}
+
 	}
 
 	$conf_tasks = $new_conf_tasks;
