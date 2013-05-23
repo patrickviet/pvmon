@@ -40,6 +40,13 @@ sub reload {
 
 	$conf = $new_conf;
 
+	# hostname
+	if(!exists $conf->{base}->{host}) {
+		my $host = `hostname`;
+		chomp($host);
+		$conf->{base}->{host} = $host;
+	}
+
 
 	# second part: the 'task' configuration
 	# -------------------------------------
@@ -53,6 +60,19 @@ sub reload {
 				croak "interrupting startup";
 			}
 	}
+
+	
+
+	# add 'special task': the hello
+	$new_conf_tasks->{hello} = {
+		'cmd' => '/bin/cat /dev/null',
+		'exec_interval' => $conf->{base}->{hello_interval}, # this means it times out after 2x this
+		'metric' => 0, state => 'ok',
+		'rs_length' => 1,
+		'rs_max_warn' => 1,
+		'rs_max_crit' => 1,
+		'rs_persistent' => 1, # make it persistent: stays there until deleted manually
+	};
 
 	my $conf_tasks_d = $basedir.'/pvmon.tasks.conf.d';
 
