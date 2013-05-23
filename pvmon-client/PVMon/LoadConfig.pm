@@ -127,8 +127,12 @@ sub reload {
 				$new_conf_tasks->{$service}->{$key} = $conf->{default_task_values}->{$key};
 			} else { print "$key already exists\n"}
 		}
-	}
 
+		# get rid of inactive services
+		if (!$conf_tasks->{$service}->{active}) {
+			delete $conf_tasks->{$service};
+		}
+	}
 
 	$conf_tasks = $new_conf_tasks;
 
