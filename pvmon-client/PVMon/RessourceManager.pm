@@ -93,7 +93,7 @@ sub get_queue {
 	# not fast but I won't have millions either so it's OK I guess ...
 	foreach my $task_id (keys %{$obj->{queue}}) {
 		my $task_request = $obj->{queue}->{$task_id};
-		if($task_request->{next_run} < $now) {
+		if($task_request->{next_run} <= $now) {
 			# must run.
 			$task_request->{service} = $task_id;
 			push @$queue, $task_request;
@@ -109,6 +109,9 @@ sub task_unregister {
 	delete $obj->{running}->{$task_id};
 	
 	$obj->{queue}->{$task_id}->{next_run} = time() + $obj->{queue}->{$task_id}->{exec_interval};
+
+	## default host
+	if(!exists $task->{ret}->{host}) { $task->{ret}->{host} = $conf->{base}->{host}; }
 	
 	#FIXME
 	
