@@ -44,7 +44,6 @@ PVMon::LoadConfig::reload();
 my $resman = PVMon::RessourceManager->new();
 
 
-
 # Basic loop
 # This is not written in typical idiomatic perl
 # because I want anyone from another language background to easily read it
@@ -94,7 +93,8 @@ if (-f $pidfile) {
 	chomp $pid;
 	if (($pid) and (kill(0,$pid))) {
 		# already running
-		exit 0;
+		$poe_kernel->run();
+		die "already running!! (pid: $pid)\n";
 	} else {
 		unlink $pidfile or die "unable to delete $pidfile: $!";
 		kill 9,$pid;
@@ -105,6 +105,7 @@ $newpid = $$;
 open PIDFILE, ">$pidfile" or die "unable to open pidfile: $!";
 print PIDFILE "$newpid\n";
 close PIDFILE;
+
 
 # ------------------------------------------------------------------------------
 
