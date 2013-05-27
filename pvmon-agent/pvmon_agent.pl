@@ -70,7 +70,8 @@ POE::Session->create(
 		plugin_close => \&plugin_close,
 		plugin_stderr => \&plugin_stderr,
 		plugin_stdout => \&plugin_stdout,
-		sigcld => sub { $_[KERNEL]->sig_handled(); }
+		sigcld => sub { $_[KERNEL]->sig_handled(); },
+		sigterm => \&sigterm,
 
 	},
 );
@@ -78,6 +79,9 @@ POE::Session->create(
 sub start {
 
 	$_[KERNEL]->sig('CLD','sigcld');
+	$_[KERNEL]->sig('TERM','sigterm');
+	$_[KERNEL]->sig('INT','sigterm');
+	$_[KERNEL]->sig('HUP','sigterm');
 
 	foreach my $plugin_name (keys %{$conf->{run}}) {
 		$_[KERNEL]->yield('plugin_run',$plugin_name);
@@ -112,6 +116,19 @@ sub plugin_stderr {
 
 sub plugin_close {
 	print "plugin close\n";
+	$kernel->delay_set('')
+}
+
+
+sub sigterm {
+	my ($kernel,$heap) = @_[KERNEL,HEAP];
+
+	print "terminating...\n";
+
+	foreach my $wheel_id (keys %{$heap->{wheel}}) {
+		print "killing ".$heap->{wheel}->{$wheel_id}->[1]." (PID: ".$heap->{wheel}->{$wheel_id}->[0]->PID.")\n";
+		$heap->{wheel}->{$wheel_id}->[0]->kill();
+	}
 }
 
 $poe_kernel->run();
