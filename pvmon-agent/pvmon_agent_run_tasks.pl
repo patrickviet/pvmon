@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # ------------------------------------------------------------------------------
-# pvmon_run_tasks.pl
+# pvmon_agent_run_tasks.pl
 # http://github.com/patrickviet/pvmon/pvmon-agent/
 # runs events
 #

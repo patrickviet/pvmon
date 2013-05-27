@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # ------------------------------------------------------------------------------
-# pvmon_pushd.pl
+# pvmon_agent_pushd.pl
 # http://github.com/patrickviet/pvmon/pvmon-agent/
 # sends events
 #
