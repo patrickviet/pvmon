@@ -2,7 +2,7 @@
 
 # ------------------------------------------------------------------------------
 # pvmon_pushd.pl
-# http://github.com/patrickviet/pvmon/pvmon-client/
+# http://github.com/patrickviet/pvmon/pvmon-agent/
 # sends events
 #
 # Deps: HTTP::Tiny, Config::Tiny

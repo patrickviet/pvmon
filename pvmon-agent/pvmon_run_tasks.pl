@@ -2,7 +2,7 @@
 
 # ------------------------------------------------------------------------------
 # pvmon_run_tasks.pl
-# http://github.com/patrickviet/pvmon/pvmon-client/
+# http://github.com/patrickviet/pvmon/pvmon-agent/
 # runs events
 #
 # Deps: Config::Tiny, POE
