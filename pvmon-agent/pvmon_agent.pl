@@ -3,7 +3,9 @@
 # ------------------------------------------------------------------------------
 # pvmon_agent.pl
 # http://github.com/patrickviet/pvmon/pvmon-agent/
-# runs events
+#
+# This is the helper/runner script
+# it relaunches stuff after two seconds if it dies...
 #
 # Deps: Config::Tiny, POE
 #
@@ -77,46 +79,56 @@ POE::Session->create(
 );
 
 sub start {
+	my $kernel = $_[KERNEL];
 
-	$_[KERNEL]->sig('CLD','sigcld');
-	$_[KERNEL]->sig('TERM','sigterm');
-	$_[KERNEL]->sig('INT','sigterm');
-	$_[KERNEL]->sig('HUP','sigterm');
+	$kernel->sig('CLD','sigcld');
 
+	# all these signals just stop the watcher and its processes
+	$kernel->sig('TERM','sigterm');
+	$kernel->sig('INT','sigterm');
+	$kernel->sig('HUP','sigterm');
+
+	# run the plugins
 	foreach my $plugin_name (keys %{$conf->{run}}) {
-		$_[KERNEL]->yield('plugin_run',$plugin_name);
+		$kernel->yield('plugin_run',$plugin_name);
 	}
 }
 
 sub plugin_run {
-	my ($heap,$arg) = @_[HEAP,ARG0];
-	print "plugin_run $arg\n";
+	my ($heap,$plugin_name) = @_[HEAP,ARG0];
+	print "plugin_run $plugin_name\n";
 
 	my $wheel = POE::Wheel::Run->new(
-		Program => $conf->{run}->{$arg},
+		Program => $conf->{run}->{$plugin_name},
 		StdoutEvent => 'plugin_stdout',
 		StderrEvent => 'plugin_stderr',
 		CloseEvent => 'plugin_close',
 	) or die $!;
 
-	$heap->{wheel}->{$wheel->ID()} = [ $wheel, $arg ];
+	$heap->{wheel}->{$wheel->ID()} = [ $wheel, $plugin_name ];
 }
 
 sub plugin_stdout {
-	my ($heap,$arg,$wheel_id) = @_[HEAP,ARG0,ARG1];
-	print $heap->{wheel}->{$wheel_id}->[1].": ".$arg."\n";
+	my ($heap,$output,$wheel_id) = @_[HEAP,ARG0,ARG1];
+	print "STDOUT ".$heap->{wheel}->{$wheel_id}->[1].": ".$output."\n";
 }
 
 sub plugin_stderr {
-	my ($heap,$arg,$wheel_id) = @_[HEAP,ARG0,ARG1];
-	print $heap->{wheel}->{$wheel_id}->[1].": ".$arg."\n";
+	my ($heap,$output,$wheel_id) = @_[HEAP,ARG0,ARG1];
+	print "STDERR ".$heap->{wheel}->{$wheel_id}->[1].": ".$output."\n";
 }
 
 
 
 sub plugin_close {
-	print "plugin close\n";
-	$kernel->delay_set('')
+	my ($kernel,$heap,$wheel_id) = @_[KERNEL,HEAP,ARG0];
+	my $wheel_data = delete $heap->{wheel}->{$wheel_id};
+	my ($wheel,$plugin_name) = @$wheel_data;
+	print "plugin close: $plugin_name\n";
+
+
+	print "relaunching plugin $plugin_name in 2sec\n";
+	$kernel->delay_set('plugin_run',2,$plugin_name);
 }
 
 
