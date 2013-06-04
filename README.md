@@ -2,3 +2,19 @@ pvmon
 =====
 
 Data collection and alerting software
+
+For more information, check URL: http://www.pvmon.org/
+
+Requirements
+------------
+
+**Agent**
+
+Perl, POE, Config::Tiny, HTTP::Tiny
+
+**Server**
+
+Node.JS - no particular version, tested on 0.4, 0.6, 0.8
+To send emails: sendmail or compatible interface (exim, postfix, etc)
+Some web server is recommended for the dashboard
+
