@@ -4,11 +4,12 @@ var url = require('url');
 
 var urls = {
 	'/insert_event': require('insert_event.js').process,
-	'/get_status': function(req,res,body) { console.log(body); res.write('rrr'); res.end(); }
+	'/get_state': require('get_state.js').get_state,
+	'/get_host_list': require('get_state.js').get_host_list,
 };
 
+
 var http = require('http');
-var url = require('url');
 
 // for now it's unauthenticated ...
 
