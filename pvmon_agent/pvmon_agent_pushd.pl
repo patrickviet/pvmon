@@ -119,7 +119,6 @@ while(1) {
 		} else {
 
 			if($response->{content} =~ m/^ERR/) {
-
 					$next_wait = 1;
 				} else {
 					print "unable to push\n";
