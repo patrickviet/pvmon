@@ -29,6 +29,24 @@ BEGIN {
 	$basedir = dirname(realpath(__FILE__));
 }
 
+# ---
+# JSON
+eval {
+	require JSON;
+	JSON->import(qw(decode_json));
+	print "loaded JSON module\n";
+};
+if($@) {
+	eval {
+		require JSON::PP;
+		JSON::PP->import(qw(decode_json));
+		print "loaded JSON::PP module\n";
+	};
+	if($@) {
+		die "unable to load JSON or JSON::PP";
+	}
+}
+
 # ------------------------------------------------------------------------------
 # Internal libs (relative path...)
 use lib $basedir;
@@ -61,6 +79,21 @@ while(1) {
 		while(<$fh>) { $buf .= $_; }
 		close $fh;
 
+		eval {
+			decode_json($buf);
+		};
+		if($@) {
+			print "invalid JSON in file $file. ";
+			my @st = stat($file);
+			if(($st[9] + 3600) < scalar time()) {
+				print " deleting because it's older than an hour\n";
+				unlink $file;
+			} else {
+				print " keeping because it's more recent an hour\n";
+			}
+			next;
+		}
+
 		# we have the buffer
 		push @to_delete,$file;
 		push @content,$buf;
@@ -69,6 +102,7 @@ while(1) {
 			$next_wait = 0;
 			last;	
 		}
+
 		
 	}
 	closedir $dh;
@@ -83,8 +117,15 @@ while(1) {
 		if($response->{content} eq "OK\n") {
 			foreach my $file (@to_delete) { unlink $file or die "unable to delete $file: $!"; }
 		} else {
-			print "unable to push\n";
-			$next_wait = 5;
+
+			if($response->{content} =~ m/^ERR/) {
+
+					$next_wait = 1;
+				} else {
+					print "unable to push\n";
+					$next_wait = 5;					
+				}
+
 		}
 	}
 	sleep($next_wait);
