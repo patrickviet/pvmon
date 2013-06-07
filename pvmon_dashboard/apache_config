@@ -1,0 +1,4 @@
+
+# in the vhost
+ProxyPass /get_state http://localhost:8000/get_state
+
