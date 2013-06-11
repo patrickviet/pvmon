@@ -55,7 +55,7 @@ BEGIN {
 
 # ------------------------------------------------------------------------------
 # Internal libs (relative path...)
-use lib '../'.$basedir;
+use lib $basedir.'/..';
 
 use PVMon::LoadConfig; # introduce $conf
 

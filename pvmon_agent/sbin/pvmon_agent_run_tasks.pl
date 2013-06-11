@@ -32,7 +32,7 @@ BEGIN {
 
 # ------------------------------------------------------------------------------
 # Internal libs (relative path...)
-use lib '../'.$basedir; # PVMon dir is one level higher than sbin
+use lib $basedir.'/..'; # PVMon dir is one level higher than sbin
 use PVMon::LoadConfig; # introduces the $conf variable ...
 use PVMon::RessourceManager;
 use PVMon::Task;
