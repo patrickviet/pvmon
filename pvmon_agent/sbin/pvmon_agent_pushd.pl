@@ -5,7 +5,7 @@
 # http://github.com/patrickviet/pvmon/pvmon-agent/
 # sends events
 #
-# Deps: HTTP::Tiny, Config::Tiny
+# Deps: WWW::Curl, Config::Tiny
 #
 # ------------------------------------------------------------------------------ 
 
@@ -13,7 +13,7 @@
 # Standard libs
 use warnings;
 use strict;
-use HTTP::Tiny;
+use WWW::Curl::Easy;
 
 # ------------------------------------------------------------------------------
 # Must run as root
@@ -121,7 +121,7 @@ while(1) {
 			if($response->{content} =~ m/^ERR/) {
 					$next_wait = 1;
 				} else {
-					print "unable to push\n";
+					print "unable to push (ERR: ".substr($response->{content},0,500).")\n";
 					$next_wait = 5;					
 				}
 
