@@ -19,9 +19,9 @@ sub reload {
 
 	# first part: the 'generic' configuration
 	# ---------------------------------------
-	my $new_conf = Config::Tiny->read("$basedir/etc/pvmon.conf");
+	my $new_conf = Config::Tiny->read("$basedir/../etc/pvmon.conf");
 	if(!$new_conf) {
-		carp "unable to load config file $basedir/etc/pvmon.conf: $!";
+		carp "unable to load config file $basedir/../etc/pvmon.conf: $!";
 		if($conf) {
 			carp "keeping current config running";
 			return;
@@ -31,11 +31,11 @@ sub reload {
 		}
 	}
 
-	my $new_conf_local = Config::Tiny->read("$basedir/etc/pvmon.local.conf");
+	my $new_conf_local = Config::Tiny->read("$basedir/../etc/pvmon.local.conf");
 	if($new_conf_local) {
 		override($new_conf,$new_conf_local);
 	} else {
-		carp "unable to load local config file $basedir/etc/pvmon.local.conf: $!";
+		carp "unable to load local config file $basedir/../etc/pvmon.local.conf: $!";
 	}
 
 	$conf = $new_conf;
@@ -51,9 +51,9 @@ sub reload {
 	# second part: the 'task' configuration
 	# -------------------------------------
 
-	my $new_conf_tasks = Config::Tiny->read("$basedir/etc/pvmon.tasks.conf");
+	my $new_conf_tasks = Config::Tiny->read("$basedir/../etc/pvmon.tasks.conf");
 	if(!$new_conf_tasks) {
-		carp "unable to load config file $basedir/etc/pvmon.tasks.conf: $!";
+		carp "unable to load config file $basedir/../etc/pvmon.tasks.conf: $!";
 		if($conf_tasks) {
 				carp "keeping current running config";
 			} else {

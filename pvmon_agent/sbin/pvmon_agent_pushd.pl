@@ -49,7 +49,7 @@ if($@) {
 
 # ------------------------------------------------------------------------------
 # Internal libs (relative path...)
-use lib $basedir;
+use lib '../'.$basedir;
 use PVMon::LoadConfig; # introduces the $conf variable ...
 
 # ------------------------------------------------------------------------------

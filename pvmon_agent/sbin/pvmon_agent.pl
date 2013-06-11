@@ -55,7 +55,7 @@ BEGIN {
 
 # ------------------------------------------------------------------------------
 # Internal libs (relative path...)
-use lib $basedir;
+use lib '../'.$basedir;
 
 use PVMon::LoadConfig; # introduce $conf
 
@@ -64,6 +64,7 @@ use PVMon::LoadConfig; # introduce $conf
 $PVMon::LoadConfig::basedir = $basedir;
 PVMon::LoadConfig::reload();
 
+chdir($basedir) or die "unable to go to basedir $basedir: $!";
 
 POE::Session->create(
 	inline_states => {
