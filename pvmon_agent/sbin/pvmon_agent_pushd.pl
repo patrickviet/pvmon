@@ -49,7 +49,7 @@ if($@) {
 
 # ------------------------------------------------------------------------------
 # Internal libs (relative path...)
-use lib '../'.$basedir;
+use lib $basedir.'/..';
 use PVMon::LoadConfig; # introduces the $conf variable ...
 
 # ------------------------------------------------------------------------------
@@ -61,7 +61,14 @@ PVMon::LoadConfig::reload();
 # ------------------------------------------------------------------------------
 
 $| = 1;
-my $http = HTTP::Tiny->new;
+my $curl = WWW::Curl::Easy->new;
+$curl->setopt(CURLOPT_CAINFO, $conf->{notifier}->{ssl_ca_cert});
+$curl->setopt(CURLOPT_SSLCERT, $conf->{notifier}->{ssl_client_cert});
+$curl->setopt(CURLOPT_SSLKEY , $conf->{notifier}->{ssl_client_key});
+$curl->setopt(CURLOPT_SSL_VERIFYPEER, 1);
+$curl->setopt(CURLOPT_POST, 1);
+
+print $conf->{notifier}->{ssl_ca_cert}."\n";
 
 while(1) {
 	my @to_delete = ();
@@ -109,24 +116,35 @@ while(1) {
 
 
 	if(scalar @content) {
-		my $params = { content => '['.join(',',@content).']', };
 	
+		my $response_content;
+		$curl->setopt(CURLOPT_WRITEDATA,\$response_content);
+		$curl->setopt(CURLOPT_URL, $conf->{notifier}->{url});
+		$curl->setopt(CURLOPT_POSTFIELDS, '['.join(',',@content).']');
 
-		my $response = $http->request('POST', $conf->{notifier}->{url}, $params);
+		my $retcode = $curl->perform();
 
-		if($response->{content} eq "OK\n") {
-			foreach my $file (@to_delete) { unlink $file or die "unable to delete $file: $!"; }
-		} else {
+		if($retcode == 0) {
+			# we got some stuff
 
-			if($response->{content} =~ m/^ERR/) {
+			if($response_content eq "OK\n") {
+				foreach my $file (@to_delete) { unlink $file or die "unable to delete $file: $!"; }
+			} else {
+
+				print "unable to push (ERR: ".substr($response_content,0,50).")\n";
+				$next_wait = 5;
+
+				if($response_content =~ m/^ERR/) {
 					$next_wait = 1;
-				} else {
-					print "unable to push (ERR: ".substr($response->{content},0,500).")\n";
-					$next_wait = 5;					
 				}
+			}
 
+
+		} else {
+			# we got an uncool error
+			print "we got some error. retcode: $retcode. err:".$curl->strerror($retcode)." ".$curl->errbuf."\n";
+			$next_wait = 2;
 		}
 	}
 	sleep($next_wait);
-
 }
