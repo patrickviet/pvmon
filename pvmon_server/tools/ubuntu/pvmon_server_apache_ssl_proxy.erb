@@ -1,0 +1,13 @@
+Listen 8000
+<VirtualHost *:8000>
+  ServerName <%= fqdn %>
+  SSLEngine On
+
+  SSLCACertificateFile /var/lib/puppet/ssl/certs/ca.pem
+  SSLCertificateFile /var/lib/puppet/ssl/certs/<%= fqdn %>.pem
+  SSLCertificateKeyFile /var/lib/puppet/ssl/private_keys/<%= fqdn %>.pem
+
+  SSLVerifyClient require
+
+  ProxyPass / http://localhost:8001/
+</VirtualHost>
