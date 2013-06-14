@@ -67,7 +67,7 @@ sub reload {
 	$new_conf_tasks->{hello} = {
 		'cmd' => '/bin/cat /dev/null',
 		'exec_interval' => $conf->{base}->{hello_interval}, # this means it times out after 2x this
-		'metric' => 0, state => 'ok',
+		'state' => 'ok',
 		'rs_length' => 1,
 		'rs_max_warn' => 1,
 		'rs_max_crit' => 1,
