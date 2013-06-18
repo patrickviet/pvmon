@@ -74,7 +74,7 @@ sub reload {
 		'rs_persistent' => 1, # make it persistent: stays there until deleted manually
 	};
 
-	my $conf_tasks_d = $basedir.'/etc/pvmon.tasks.conf.d';
+	my $conf_tasks_d = $basedir.'/../etc/pvmon.tasks.conf.d';
 
 	if (-d $conf_tasks_d) {
 		opendir(my $dh, $conf_tasks_d) or die "unable to open dir $conf_tasks_d: $!";
