@@ -131,7 +131,7 @@ while(1) {
 				foreach my $file (@to_delete) { unlink $file or die "unable to delete $file: $!"; }
 			} else {
 
-				print "unable to push (ERR: ".substr($response_content,0,50).")\n";
+				print "unable to push (ERR: ".substr($response_content,0,500).")\n";
 				$next_wait = 5;
 
 				if($response_content =~ m/^ERR/) {
