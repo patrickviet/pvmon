@@ -64,13 +64,20 @@ sub task_run {
 	$obj->{stdout} = [],
 	$obj->{stderr} = "",
 
+	my $plugindir = $PVMon::LoadConfig::basedir.'/../plugins';
+
 	# check that it can run ...	
 	my @sp = split(/\ /, $obj->{cmd});
 	if (! -x $sp[0]) {
-		if(-x 'plugins/'.$sp[0]) {
-			$obj->{cmd} = 'plugins/'.$obj->{cmd};
+		if(-x $plugindir.'/'.$sp[0]) {
+			$obj->{cmd} = $plugindir.'/'.$obj->{cmd};
 		} else {
-			$obj->{stderr} = $sp[0]." is not executable";
+			if(! -e $obj->{cmd}) {
+				$obj->{stderr} = $sp[0]." executable does not exist";
+			} else {
+					$obj->{stderr} = $sp[0]." is not executable";
+			}
+			
 			return $kernel->yield('task_close');			
 		}
 	}
