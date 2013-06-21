@@ -75,6 +75,8 @@ while(1) {
 	my @content = ();
 	my $next_wait = 1;
 
+	if(!-d $conf->{base}->{tmpdir}) { system("mkdir ".$conf->{base}->{tmpdir}); }
+	
 	opendir my $dh, $conf->{base}->{tmpdir} or die "unable to open queue dir: $!";
 	while(my $file = readdir $dh) {
 		$file = $conf->{base}->{tmpdir}.'/'.$file;
